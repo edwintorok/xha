@@ -532,6 +532,28 @@ main_terminate(
 //  Set process scheduling policy/priority and Lock resident memory.
 //
 
+static int move_to_root_cgroup(void) {
+  FILE *f;
+
+  f = fopen("/sys/fs/cgroup/cpu/tasks", "w");
+  if (f == NULL) {
+    log_message(LOG_DEBUG, "Can't open cgroups tasks file for writing\n");
+    return(-1);
+  }
+
+  if (fprintf(f, "%d\n", getpid()) <= 0) {
+		log_message(LOG_DEBUG, "Can't write pid into cgroups tasks file\n");
+    fclose(f);
+    return(-1);
+  }
+
+  if (fclose(f) != 0) {
+		log_message(LOG_DEBUG, "Can't close cgroups tasks file\n");
+    return(-1);
+  }
+
+}
+
 void
 main_steady_state(void)
 {
@@ -542,6 +564,10 @@ main_steady_state(void)
     // set scheduler policy and priority
     sched_policy = SCHED_RR;
     sparam.sched_priority = 50;
+
+
+    (void)move_to_root_cgroup();
+
     status = sched_setscheduler(getpid() , sched_policy, &sparam);
     if (status == 0) 
     {
