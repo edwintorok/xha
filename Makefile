@@ -6,9 +6,9 @@
 #   modify this makefile to do release install by default. See #here below. 
 #
 
-.PHONY: build clean debug release
+.PHONY: build clean debug release analyze
 
-all: debug release
+all: debug release analyze
 
 debug:
 	@mkdir -p debug
@@ -25,6 +25,14 @@ release:
 	@cd daemon;   make DEFMAKE=default-release.mk
 	@cd commands; make DEFMAKE=default-release.mk
 	@cd scripts;  make DEFMAKE=default-release.mk
+
+analyze:
+	@mkdir -p analyze
+	@cd include;  make DEFMAKE=default-analyze.mk
+	@cd lib;      make DEFMAKE=default-analyze.mk
+	@cd daemon;   make DEFMAKE=default-analyze.mk
+	@cd commands; make DEFMAKE=default-analyze.mk
+	@cd scripts;  make DEFMAKE=default-analyze.mk
 
 clean: debug-clean release-clean
 
@@ -43,6 +51,14 @@ release-clean:
 	@cd commands; make clean DEFMAKE=default-release.mk
 	@cd scripts;  make clean DEFMAKE=default-release.mk
 	-rmdir release
+
+analyze-clean:
+	@cd include;  make clean DEFMAKE=default-analyze.mk
+	@cd lib;      make clean DEFMAKE=default-analyze.mk
+	@cd daemon;   make clean DEFMAKE=default-analyze.mk
+	@cd commands; make clean DEFMAKE=default-analyze.mk
+	@cd scripts;  make clean DEFMAKE=default-analyze.mk
+	-rmdir analyze
 
 #here
 install: debug-install

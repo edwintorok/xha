@@ -39,3 +39,33 @@ jobs:
 
       - name: Build
         run: make
+
+  analyze-gcc:
+    runs-on: ubuntu-latest
+    steps:      
+      - name: Install dependencies (apt)
+        run: sudo apt-get install -y libxml2-dev libxen-dev
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build
+        run: |
+          make analyze
+
+      # https://github.com/github/codeql-action/issues/220#issuecomment-1314291896
+      # GCC creates 1 .sarif file / source file, and this hits the max 20 runs limit in GHA.
+      # Merge the files instead so that GHA only sees 1 run.
+      # Also GH doesn't support the baseuri that the multitool emits, have to turn it into an absoluteuri,
+      # and then rebase it back into relative URI
+      - name: Workaround Github Action bug - merge SARIF files
+        run: |
+          npx -y @microsoft/sarif-multitool merge */*.sarif --output-file merged.sarif
+          npx -y @microsoft/sarif-multitool absoluteuri merged.sarif -o .
+          npx  -y @microsoft/sarif-multitool rebaseuri -b $PWD -t SRCROOT merged-absolute.sarif  -o .
+
+      - name: Upload SARIF file
+        uses: github/codeql-action/upload-sarif@v3
+        with:
+            sarif_file: merged-absolute-rebased.sarif
+            category: gcc
