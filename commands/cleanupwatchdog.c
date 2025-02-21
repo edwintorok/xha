@@ -398,6 +398,7 @@ main(
             return MTC_EXIT_INVALID_PARAMETER;
         }
     }
+    (void)fclose(fp);
     for (idindex = 0; idindex < idnum; idindex++)
     {
         if (id[idindex] == 0) 
